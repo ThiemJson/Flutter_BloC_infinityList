@@ -53,7 +53,8 @@ class _ListPageState extends State<ListPage> {
 
         if (commentState is CommentStateFailure) {
           child = Center(
-            child: Text("Fail to fetch data, please check your connnection"),
+            child: Text(
+                "Fail to fetch data, please check your internet connection"),
           );
         }
 
