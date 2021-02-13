@@ -9,7 +9,7 @@ class CommentBloc extends Bloc<CommentEvent, CommentState> {
   @override
   Stream<CommentState> mapEventToState(CommentEvent commentEvent) async* {
     // Comment event trigger
-    if (commentEvent is CommentEventFetchedComment) {
+    if (commentEvent is CommentEventFetchedComment && !_hasRechedEnd(state)) {
       try {
         switch (state.runtimeType) {
           case CommentStateInitial:
@@ -17,24 +17,17 @@ class CommentBloc extends Bloc<CommentEvent, CommentState> {
                 hasReachedEnd: false,
                 comments: await fetchCommentFromAPI(0, 20));
             break;
-          case CommentStateFailure:
-            break;
           case CommentStateSuccess:
-            if (_hasRechedEnd()) {
-              // todo
-            } else {
-              final comments = await fetchCommentFromAPI(
-                  (state as CommentStateSuccess).comments.length, 20);
+            final comments = await fetchCommentFromAPI(
+                (state as CommentStateSuccess).comments.length, 20);
 
-              if (comments.isEmpty) {
-                yield (state as CommentStateSuccess)
-                    .copyWith(hasReachedEnd: true);
-              } else {
-                yield CommentStateSuccess(
-                    hasReachedEnd: false,
-                    comments:
-                        (state as CommentStateSuccess).comments + comments);
-              }
+            if (comments.isEmpty) {
+              yield (state as CommentStateSuccess)
+                  .copyWith(hasReachedEnd: true);
+            } else {
+              yield CommentStateSuccess(
+                  hasReachedEnd: false,
+                  comments: (state as CommentStateSuccess).comments + comments);
             }
             break;
         }
@@ -44,7 +37,6 @@ class CommentBloc extends Bloc<CommentEvent, CommentState> {
     }
   }
 
-  bool _hasRechedEnd() =>
-      (state as CommentStateSuccess).hasReachedEnd &&
-      (state is CommentStateSuccess);
+  bool _hasRechedEnd(CommentState state) =>
+      (state is CommentStateSuccess) && (state.hasReachedEnd);
 }
